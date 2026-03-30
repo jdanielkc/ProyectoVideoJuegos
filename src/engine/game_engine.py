@@ -1,22 +1,42 @@
-import pygame
-import esper
+import json
 
+import esper
+import pygame
+
+from src.ecs.components.c_enemy_spawner import CEnemySpawner
+from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
-from src.create.prefabs_creator import crear_cuadrado_prefab
 
 
 class GameEngine:
     def __init__(self) -> None:
         pygame.init()
-        self.screen = pygame.display.set_mode((640, 360), pygame.SCALED)
+
+        self._window_cfg = self._load_json("assets/cfg/window.json")
+        self._enemies_cfg = self._load_json("assets/cfg/enemies.json")
+        self._level_cfg = self._load_json("assets/cfg/level_01.json")
+
+        size = self._window_cfg["size"]
+        self.screen = pygame.display.set_mode(
+            (size["w"], size["h"]), pygame.SCALED
+        )
+        pygame.display.set_caption(self._window_cfg["title"])
+
+        bg = self._window_cfg["bg_color"]
+        self._bg_color = pygame.Color(bg["r"], bg["g"], bg["b"])
+        self._framerate = self._window_cfg["framerate"]
+
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.delta_time = 0
-        self.framerate = 60
 
         self.ecs_world = esper.World()
+
+    def _load_json(self, path: str) -> dict:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
 
     def run(self) -> None:
         self._create()
@@ -29,17 +49,14 @@ class GameEngine:
         self._clean()
 
     def _create(self):
-        # Cuadrado
-        crear_cuadrado_prefab(
-            self.ecs_world,
-            size=pygame.Vector2(50, 50),
-            pos=pygame.Vector2(150, 300),
-            vel=pygame.Vector2(200, 300),
-            col=pygame.Color("red"),
+        spawner_entity = self.ecs_world.create_entity()
+        self.ecs_world.add_component(
+            spawner_entity,
+            CEnemySpawner(self._level_cfg, self._enemies_cfg)
         )
 
     def _calculate_time(self):
-        self.clock.tick(self.framerate)
+        self.clock.tick(self._framerate)
         self.delta_time = self.clock.get_time() / 1000.0
 
     def _process_events(self):
@@ -48,11 +65,12 @@ class GameEngine:
                 self.is_running = False
 
     def _update(self):
+        system_enemy_spawner(self.ecs_world, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_screen_bounce(self.ecs_world, self.screen)
 
     def _draw(self):
-        self.screen.fill((45, 203, 128))
+        self.screen.fill(self._bg_color)
         system_rendering(self.ecs_world, self.screen)
         pygame.display.flip()
 
