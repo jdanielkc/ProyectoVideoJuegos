@@ -108,29 +108,21 @@ class GameEngine:
         pygame.quit()
 
     def _do_action(self, action: CInputCommand):
-        if action.name == "PLAYER_LEFT":
-            if action.phase == CommandPhase.START:
-                self._player_c_v.vel.x -= self._player_cfg["input_velocity"]
-            elif action.phase == CommandPhase.END:
-                self._player_c_v.vel.x += self._player_cfg["input_velocity"]
-        elif action.name == "PLAYER_RIGHT":
-            if action.phase == CommandPhase.START:
-                self._player_c_v.vel.x += self._player_cfg["input_velocity"]
-            elif action.phase == CommandPhase.END:
-                self._player_c_v.vel.x -= self._player_cfg["input_velocity"]
-        elif action.name == "PLAYER_UP":
-            if action.phase == CommandPhase.START:
-                self._player_c_v.vel.y -= self._player_cfg["input_velocity"]
-            elif action.phase == CommandPhase.END:
-                self._player_c_v.vel.y += self._player_cfg["input_velocity"]
-        elif action.name == "PLAYER_DOWN":
-            if action.phase == CommandPhase.START:
-                self._player_c_v.vel.y += self._player_cfg["input_velocity"]
-            elif action.phase == CommandPhase.END:
-                self._player_c_v.vel.y -= self._player_cfg["input_velocity"]
-        elif action.name == "PLAYER_FIRE":
-            if action.phase == CommandPhase.START:
-                self._fire_bullet()
+        if action.name == "PLAYER_FIRE" and action.phase == CommandPhase.START:
+            self._fire_bullet()
+            return
+        sign = 1 if action.phase == CommandPhase.START else -1
+        speed = self._player_cfg["input_velocity"]
+        move_map = {
+            "PLAYER_LEFT": (-sign * speed, 0),
+            "PLAYER_RIGHT": (sign * speed, 0),
+            "PLAYER_UP": (0, -sign * speed),
+            "PLAYER_DOWN": (0, sign * speed),
+        }
+        if action.name in move_map:
+            dx, dy = move_map[action.name]
+            self._player_c_v.vel.x += dx
+            self._player_c_v.vel.y += dy
 
     def _fire_bullet(self):
         max_bullets = self._level_cfg["player_spawn"].get("max_bullets", 1)
