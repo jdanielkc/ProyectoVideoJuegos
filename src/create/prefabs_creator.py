@@ -55,12 +55,7 @@ def create_enemy_square(
     enemy_data: dict,
     position: dict,
 ):
-    size = pygame.Vector2(enemy_data["size"]["x"], enemy_data["size"]["y"])
-    col = pygame.Color(
-        enemy_data["color"]["r"],
-        enemy_data["color"]["g"],
-        enemy_data["color"]["b"],
-    )
+    enemy_surface = pygame.image.load(enemy_data["image"]).convert_alpha()
     pos = pygame.Vector2(position["x"], position["y"])
     vel_min = enemy_data["velocity_min"]
     vel_max = enemy_data["velocity_max"]
@@ -70,8 +65,23 @@ def create_enemy_square(
         math.cos(angle) * speed,
         math.sin(angle) * speed,
     )
-    enemy_entity = crear_cuadrado_prefab(world, size=size, pos=pos, vel=vel, col=col)
+    enemy_entity = create_sprite(
+        world, pos=pos, vel=vel, surface=enemy_surface
+    )
     world.add_component(enemy_entity, CTagEnemy())
+
+
+def create_sprite(
+    world: esper.World,
+    pos: pygame.Vector2,
+    vel: pygame.Vector2,
+    surface: pygame.Surface,
+) -> int:
+    sprite_entity = world.create_entity()
+    world.add_component(sprite_entity, CTransform(pos=pos))
+    world.add_component(sprite_entity, CVelocity(vel=vel))
+    world.add_component(sprite_entity, CSurface.from_surface(surface))
+    return sprite_entity
 
 
 def create_bullet_square(
@@ -81,15 +91,10 @@ def create_bullet_square(
     player_size: pygame.Vector2,
     mouse_pos: tuple,
 ):
-    size = pygame.Vector2(bullet_cfg["size"]["x"], bullet_cfg["size"]["y"])
-    col = pygame.Color(
-        bullet_cfg["color"]["r"],
-        bullet_cfg["color"]["g"],
-        bullet_cfg["color"]["b"],
-    )
+    bullet_surface = pygame.image.load(bullet_cfg["image"]).convert_alpha()
     center_x = player_pos.x + player_size.x / 2
     center_y = player_pos.y + player_size.y / 2
-    pos = pygame.Vector2(center_x - size.x / 2, center_y - size.y / 2)
+    pos = pygame.Vector2(center_x - bullet_surface.get_width() / 2, center_y - bullet_surface.get_height() / 2)
 
     direction = pygame.Vector2(mouse_pos[0] - center_x, mouse_pos[1] - center_y)
     if direction.length() == 0:
@@ -97,7 +102,7 @@ def create_bullet_square(
     direction = direction.normalize()
     vel = direction * bullet_cfg["velocity"]
 
-    bullet_entity = crear_cuadrado_prefab(world, size=size, pos=pos, vel=vel, col=col)
+    bullet_entity = create_sprite(world, pos=pos, vel=vel, surface=bullet_surface)
     world.add_component(bullet_entity, CTagBullet())
 
 
