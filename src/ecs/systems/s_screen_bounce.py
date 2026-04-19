@@ -1,5 +1,6 @@
 import esper
 import pygame
+from src.ecs.components.c_hunter_state import CHunterState
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_velocity import CVelocity
@@ -14,6 +15,8 @@ def system_screen_bounce(world: esper.World, screen: pygame.Surface):
     c_s: CSurface
 
     for entity, (c_t, c_v, c_s, c_e) in components:
+        if world.has_component(entity, CHunterState):
+            continue
         screen_rect = screen.get_rect()
         cuad_rect = CSurface.get_area_relative_top(c_s.area, c_t.pos)
 

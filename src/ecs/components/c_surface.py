@@ -14,6 +14,7 @@ class CSurface:
         instance.area = surf.get_rect()
         return instance
 
+    @staticmethod
     def get_area_relative_top(
         area: pygame.Rect, pos_topleft: pygame.Vector2
     ) -> pygame.Rect:

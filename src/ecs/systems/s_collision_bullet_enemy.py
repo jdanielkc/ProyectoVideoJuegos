@@ -1,12 +1,14 @@
 import esper
+import pygame
 
+from src.create.prefabs_creator import create_explosion
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
 
 
-def system_collision_bullet_enemy(world: esper.World):
+def system_collision_bullet_enemy(world: esper.World, explosion_cfg: dict):
     bullets = world.get_components(CTransform, CSurface, CTagBullet)
     enemies = world.get_components(CTransform, CSurface, CTagEnemy)
 
@@ -15,6 +17,10 @@ def system_collision_bullet_enemy(world: esper.World):
         for e_entity, (e_t, e_s, _) in enemies:
             enemy_rect = CSurface.get_area_relative_top(e_s.area, e_t.pos)
             if bullet_rect.colliderect(enemy_rect):
+                explosion_pos = pygame.Vector2(
+                    enemy_rect.centerx, enemy_rect.centery
+                )
                 world.delete_entity(b_entity)
                 world.delete_entity(e_entity)
+                create_explosion(world, explosion_cfg, explosion_pos)
                 break

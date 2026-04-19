@@ -4,6 +4,7 @@ import random
 import esper
 import pygame
 from src.ecs.components.c_animation import CAnimation
+from src.ecs.components.c_hunter_state import CHunterState
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_surface import CSurface
@@ -11,6 +12,7 @@ from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
+from src.ecs.components.tags.c_tag_explosion import CTagExplosion
 from src.ecs.components.tags.c_tag_player import CTagPlayer
 
 
@@ -67,6 +69,60 @@ def create_enemy_square(
     )
     enemy_entity = create_sprite(world, pos=pos, vel=vel, surface=enemy_surface)
     world.add_component(enemy_entity, CTagEnemy())
+
+
+def create_hunter_enemy(
+    world: esper.World,
+    enemy_data: dict,
+    position: dict,
+):
+    enemy_surface = pygame.image.load(enemy_data["image"]).convert_alpha()
+    num_frames = enemy_data["animations"]["number_frames"]
+    frame_width = enemy_surface.get_width() / num_frames
+    origin = pygame.Vector2(
+        position["x"],
+        position["y"],
+    )
+    pos = pygame.Vector2(
+        origin.x - frame_width / 2,
+        origin.y - enemy_surface.get_height() / 2,
+    )
+    vel = pygame.Vector2(0, 0)
+    enemy_entity = create_sprite(world, pos=pos, vel=vel, surface=enemy_surface)
+    world.add_component(enemy_entity, CTagEnemy())
+    world.add_component(enemy_entity, CAnimation(enemy_data["animations"]))
+    world.add_component(
+        enemy_entity,
+        CHunterState(
+            origin=origin,
+            velocity_chase=enemy_data["velocity_chase"],
+            velocity_return=enemy_data["velocity_return"],
+            distance_start_chase=enemy_data["distance_start_chase"],
+            distance_start_return=enemy_data["distance_start_return"],
+        ),
+    )
+
+
+def create_explosion(
+    world: esper.World,
+    explosion_cfg: dict,
+    pos: pygame.Vector2,
+):
+    explosion_surface = pygame.image.load(explosion_cfg["image"]).convert_alpha()
+    num_frames = explosion_cfg["animations"]["number_frames"]
+    frame_width = explosion_surface.get_width() / num_frames
+    center_pos = pygame.Vector2(
+        pos.x - frame_width / 2,
+        pos.y - explosion_surface.get_height() / 2,
+    )
+    vel = pygame.Vector2(0, 0)
+    explosion_entity = create_sprite(
+        world, pos=center_pos, vel=vel, surface=explosion_surface
+    )
+    world.add_component(
+        explosion_entity, CAnimation(explosion_cfg["animations"], looping=False)
+    )
+    world.add_component(explosion_entity, CTagExplosion())
 
 
 def create_sprite(

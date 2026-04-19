@@ -19,6 +19,8 @@ from src.ecs.systems.s_bullet_bounds import system_bullet_bounds
 from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
 from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
+from src.ecs.systems.s_explosion_cleanup import system_explosion_cleanup
+from src.ecs.systems.s_hunter_state import system_hunter_state
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_player_bounds import system_player_bounds
@@ -36,6 +38,7 @@ class GameEngine:
         self._level_cfg = self._load_json("assets/cfg/level_01.json")
         self._player_cfg = self._load_json("assets/cfg/player.json")
         self._bullet_cfg = self._load_json("assets/cfg/bullet.json")
+        self._explosion_cfg = self._load_json("assets/cfg/explosion.json")
 
         size = self._window_cfg["size"]
         self.screen = pygame.display.set_mode((size["w"], size["h"]), pygame.SCALED)
@@ -92,14 +95,16 @@ class GameEngine:
         system_enemy_spawner(self.ecs_world, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
         system_player_state(self.ecs_world)
+        system_hunter_state(self.ecs_world)
         system_screen_bounce(self.ecs_world, self.screen)
         system_player_bounds(self.ecs_world, self.screen)
         system_bullet_bounds(self.ecs_world, self.screen)
         system_collision_player_enemy(
-            self.ecs_world, self._player_entity, self._level_cfg
+            self.ecs_world, self._player_entity, self._level_cfg, self._explosion_cfg
         )
-        system_collision_bullet_enemy(self.ecs_world)
+        system_collision_bullet_enemy(self.ecs_world, self._explosion_cfg)
         system_animation(self.ecs_world, self.delta_time)
+        system_explosion_cleanup(self.ecs_world)
         self.ecs_world._clear_dead_entities()
 
     def _draw(self):
