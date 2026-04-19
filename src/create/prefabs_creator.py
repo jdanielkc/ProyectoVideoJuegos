@@ -46,6 +46,7 @@ def create_player_square(
     )
     vel = pygame.Vector2(0, 0)
     player_entity = create_sprite(world, pos=pos, vel=vel, surface=player_sprite)
+    _setup_animation_area(world, player_entity, player_cfg["animations"])
     world.add_component(player_entity, CTagPlayer())
     world.add_component(player_entity, CAnimation(player_cfg["animations"]))
     world.add_component(player_entity, CPlayerState())
@@ -79,16 +80,14 @@ def create_hunter_enemy(
     enemy_surface = pygame.image.load(enemy_data["image"]).convert_alpha()
     num_frames = enemy_data["animations"]["number_frames"]
     frame_width = enemy_surface.get_width() / num_frames
+    pos = pygame.Vector2(position["x"], position["y"])
     origin = pygame.Vector2(
-        position["x"],
-        position["y"],
-    )
-    pos = pygame.Vector2(
-        origin.x - frame_width / 2,
-        origin.y - enemy_surface.get_height() / 2,
+        pos.x + frame_width / 2,
+        pos.y + enemy_surface.get_height() / 2,
     )
     vel = pygame.Vector2(0, 0)
     enemy_entity = create_sprite(world, pos=pos, vel=vel, surface=enemy_surface)
+    _setup_animation_area(world, enemy_entity, enemy_data["animations"])
     world.add_component(enemy_entity, CTagEnemy())
     world.add_component(enemy_entity, CAnimation(enemy_data["animations"]))
     world.add_component(
@@ -119,6 +118,7 @@ def create_explosion(
     explosion_entity = create_sprite(
         world, pos=center_pos, vel=vel, surface=explosion_surface
     )
+    _setup_animation_area(world, explosion_entity, explosion_cfg["animations"])
     world.add_component(
         explosion_entity, CAnimation(explosion_cfg["animations"], looping=False)
     )
@@ -136,6 +136,14 @@ def create_sprite(
     world.add_component(sprite_entity, CVelocity(vel=vel))
     world.add_component(sprite_entity, CSurface.from_surface(surface))
     return sprite_entity
+
+
+def _setup_animation_area(world: esper.World, entity: int, animations: dict):
+    c_s = world.component_for_entity(entity, CSurface)
+    num_frames = animations["number_frames"]
+    c_s.area.w = c_s.surf.get_width() / num_frames
+    start_frame = animations["list"][0]["start"]
+    c_s.area.x = c_s.area.w * start_frame
 
 
 def create_bullet_square(
