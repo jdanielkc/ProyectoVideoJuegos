@@ -14,6 +14,7 @@ from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
+from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_bullet_bounds import system_bullet_bounds
 from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
 from src.ecs.systems.s_collision_player_enemy import system_collision_player_enemy
@@ -21,6 +22,7 @@ from src.ecs.systems.s_enemy_spawner import system_enemy_spawner
 from src.ecs.systems.s_input_player import system_input_player
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_player_bounds import system_player_bounds
+from src.ecs.systems.s_player_state import system_player_state
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_screen_bounce import system_screen_bounce
 
@@ -89,6 +91,7 @@ class GameEngine:
     def _update(self):
         system_enemy_spawner(self.ecs_world, self.delta_time)
         system_movement(self.ecs_world, self.delta_time)
+        system_player_state(self.ecs_world)
         system_screen_bounce(self.ecs_world, self.screen)
         system_player_bounds(self.ecs_world, self.screen)
         system_bullet_bounds(self.ecs_world, self.screen)
@@ -96,6 +99,7 @@ class GameEngine:
             self.ecs_world, self._player_entity, self._level_cfg
         )
         system_collision_bullet_enemy(self.ecs_world)
+        system_animation(self.ecs_world, self.delta_time)
         self.ecs_world._clear_dead_entities()
 
     def _draw(self):
@@ -131,7 +135,7 @@ class GameEngine:
             return
         pl_t = self.ecs_world.component_for_entity(self._player_entity, CTransform)
         pl_s = self.ecs_world.component_for_entity(self._player_entity, CSurface)
-        player_size = pygame.Vector2(pl_s.surf.get_width(), pl_s.surf.get_height())
+        player_size = pygame.Vector2(pl_s.area.w, pl_s.area.h)
         mouse_pos = pygame.mouse.get_pos()
         create_bullet_square(
             self.ecs_world, self._bullet_cfg, pl_t.pos, player_size, mouse_pos

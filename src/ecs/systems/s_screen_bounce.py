@@ -15,7 +15,7 @@ def system_screen_bounce(world: esper.World, screen: pygame.Surface):
 
     for entity, (c_t, c_v, c_s, c_e) in components:
         screen_rect = screen.get_rect()
-        cuad_rect = c_s.surf.get_rect(topleft=c_t.pos)
+        cuad_rect = CSurface.get_area_relative_top(c_s.area, c_t.pos)
 
         if cuad_rect.left < 0 or cuad_rect.right > screen_rect.width:
             c_v.vel.x *= -1

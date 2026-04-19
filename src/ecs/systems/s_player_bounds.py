@@ -11,7 +11,7 @@ def system_player_bounds(world: esper.World, screen: pygame.Surface):
     screen_rect = screen.get_rect()
 
     for _, (c_t, c_s, _) in components:
-        player_rect = c_s.surf.get_rect(topleft=c_t.pos)
+        player_rect = CSurface.get_area_relative_top(c_s.area, c_t.pos)
         if player_rect.left < screen_rect.left:
             c_t.pos.x = screen_rect.left
         elif player_rect.right > screen_rect.right:

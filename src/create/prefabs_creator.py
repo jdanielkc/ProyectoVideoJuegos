@@ -3,7 +3,9 @@ import random
 
 import esper
 import pygame
+from src.ecs.components.c_animation import CAnimation
 from src.ecs.components.c_input_command import CInputCommand
+from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
@@ -34,19 +36,17 @@ def create_player_square(
     player_cfg: dict,
     player_spawn: dict,
 ) -> int:
-    size = pygame.Vector2(player_cfg["size"]["x"], player_cfg["size"]["y"])
-    col = pygame.Color(
-        player_cfg["color"]["r"],
-        player_cfg["color"]["g"],
-        player_cfg["color"]["b"],
-    )
+    player_sprite = pygame.image.load(player_cfg["image"]).convert_alpha()
+    frame_width = player_sprite.get_width() / player_cfg["animations"]["number_frames"]
     pos = pygame.Vector2(
-        player_spawn["position"]["x"] - (size.x / 2),
-        player_spawn["position"]["y"] - (size.y / 2),
+        player_spawn["position"]["x"] - (frame_width / 2),
+        player_spawn["position"]["y"] - (player_sprite.get_height() / 2),
     )
     vel = pygame.Vector2(0, 0)
-    player_entity = crear_cuadrado_prefab(world, size=size, pos=pos, vel=vel, col=col)
+    player_entity = create_sprite(world, pos=pos, vel=vel, surface=player_sprite)
     world.add_component(player_entity, CTagPlayer())
+    world.add_component(player_entity, CAnimation(player_cfg["animations"]))
+    world.add_component(player_entity, CPlayerState())
     return player_entity
 
 
@@ -65,9 +65,7 @@ def create_enemy_square(
         math.cos(angle) * speed,
         math.sin(angle) * speed,
     )
-    enemy_entity = create_sprite(
-        world, pos=pos, vel=vel, surface=enemy_surface
-    )
+    enemy_entity = create_sprite(world, pos=pos, vel=vel, surface=enemy_surface)
     world.add_component(enemy_entity, CTagEnemy())
 
 
@@ -94,7 +92,10 @@ def create_bullet_square(
     bullet_surface = pygame.image.load(bullet_cfg["image"]).convert_alpha()
     center_x = player_pos.x + player_size.x / 2
     center_y = player_pos.y + player_size.y / 2
-    pos = pygame.Vector2(center_x - bullet_surface.get_width() / 2, center_y - bullet_surface.get_height() / 2)
+    pos = pygame.Vector2(
+        center_x - bullet_surface.get_width() / 2,
+        center_y - bullet_surface.get_height() / 2,
+    )
 
     direction = pygame.Vector2(mouse_pos[0] - center_x, mouse_pos[1] - center_y)
     if direction.length() == 0:
