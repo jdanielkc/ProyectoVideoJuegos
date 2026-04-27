@@ -1,0 +1,14 @@
+{
+    "cooldown": 2.5,
+    "velocity": 190,
+    "sound": "assets/snd/laser.ogg",
+    "size": {
+        "w": 8,
+        "h": 8
+    },
+    "color": {
+        "r": 120,
+        "g": 255,
+        "b": 255
+    }
+}

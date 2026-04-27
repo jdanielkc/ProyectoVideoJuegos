@@ -14,6 +14,16 @@ class CSurface:
         instance.area = surf.get_rect()
         return instance
 
+    @classmethod
+    def from_text(
+        cls,
+        text: str,
+        font: pygame.font.Font,
+        color: pygame.Color,
+    ):
+        surf = font.render(text, False, color)
+        return cls.from_surface(surf)
+
     @staticmethod
     def get_area_relative_top(
         area: pygame.Rect, pos_topleft: pygame.Vector2

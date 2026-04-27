@@ -1,0 +1,65 @@
+{
+    "font": "assets/fnt/PressStart2P-Regular.ttf",
+    "texts": {
+        "title": {
+            "text": "MISO - EJ04",
+            "size": 12,
+            "color": { "r": 240, "g": 240, "b": 240 },
+            "position": { "x": 10, "y": 8 }
+        },
+        "pause": {
+            "text": "PAUSA - P",
+            "size": 10,
+            "color": { "r": 255, "g": 220, "b": 90 },
+            "position": { "x": 0, "y": 164 }
+        },
+        "move_help": {
+            "text": "WASD/FLECHAS",
+            "size": 7,
+            "color": { "r": 180, "g": 180, "b": 180 },
+            "position": { "x": 10, "y": 320 }
+        },
+        "fire_help": {
+            "text": "CLICK: DISPARAR",
+            "size": 7,
+            "color": { "r": 180, "g": 180, "b": 180 },
+            "position": { "x": 10, "y": 340 }
+        },
+        "special_help": {
+            "text": "E: ESPECIAL",
+            "size": 7,
+            "color": { "r": 120, "g": 255, "b": 255 },
+            "position": { "x": 400, "y": 320 }
+        },
+        "pause_help": {
+            "text": "P: PAUSA",
+            "size": 7,
+            "color": { "r": 180, "g": 180, "b": 180 },
+            "position": { "x": 400, "y": 340 }
+        },
+        "special_cooldown": {
+            "text": "E: LISTO",
+            "size": 8,
+            "color": { "r": 120, "g": 255, "b": 255 },
+            "position": { "x": 430, "y": 10 }
+        },
+        "game_over": {
+            "text": "GAME OVER",
+            "size": 18,
+            "color": { "r": 255, "g": 60, "b": 60 },
+            "position": { "x": 0, "y": 160 }
+        },
+        "level_success": {
+            "text": "LEVEL SUCCESS",
+            "size": 16,
+            "color": { "r": 120, "g": 255, "b": 120 },
+            "position": { "x": 0, "y": 160 }
+        },
+        "restart_help": {
+            "text": "R: REINICIAR",
+            "size": 10,
+            "color": { "r": 255, "g": 255, "b": 255 },
+            "position": { "x": 0, "y": 200 }
+        }
+    }
+}

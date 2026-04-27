@@ -1,5 +1,6 @@
 {
     "image": "assets/img/player.png",
+    "sound_move": "assets/snd/ufo.ogg",
     "animations": {
         "number_frames": 4,
         "list": [

@@ -2,8 +2,10 @@ import esper
 import pygame
 
 from src.create.prefabs_creator import create_explosion
+from src.ecs.components.c_game_state import CGameState
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
+from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
 
 
@@ -30,3 +32,24 @@ def system_collision_player_enemy(
             pl_t.pos.y = level_cfg["player_spawn"]["position"]["y"] - (
                 pl_s.area.h / 2
             )
+
+            # Restar una vida y comprobar game over
+            game_state_components = world.get_components(CGameState)
+            if len(game_state_components) > 0:
+                _, (c_game_state,) = game_state_components[0]
+                if not c_game_state.game_over and not c_game_state.level_success:
+                    c_game_state.lives -= 1
+                    if c_game_state.lives <= 0:
+                        c_game_state.lives = 0
+                        c_game_state.game_over = True
+                        # Detener al jugador
+                        try:
+                            pl_v = world.component_for_entity(
+                                player_entity, CVelocity
+                            )
+                            pl_v.vel.x = 0
+                            pl_v.vel.y = 0
+                        except KeyError:
+                            pass
+            return
+

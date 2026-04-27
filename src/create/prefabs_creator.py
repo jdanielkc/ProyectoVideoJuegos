@@ -8,7 +8,10 @@ from src.ecs.components.c_hunter_state import CHunterState
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_surface import CSurface
+from src.ecs.components.c_text import CText
 from src.ecs.components.c_transform import CTransform
+from src.ecs.components.c_ui_text import CUiText
+from src.ecs.components.c_ui_heart import CUiHeart
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_bullet import CTagBullet
 from src.ecs.components.tags.c_tag_enemy import CTagEnemy
@@ -176,6 +179,62 @@ def create_bullet_square(
     ServiceLocator.sounds_service.play(bullet_cfg["sound"])
 
 
+def create_special_bullet_square(
+    world: esper.World,
+    special_cfg: dict,
+    player_pos: pygame.Vector2,
+    player_size: pygame.Vector2,
+    direction: pygame.Vector2,
+):
+    size = pygame.Vector2(special_cfg["size"]["w"], special_cfg["size"]["h"])
+    color_cfg = special_cfg["color"]
+    color = pygame.Color(color_cfg["r"], color_cfg["g"], color_cfg["b"])
+    center_x = player_pos.x + player_size.x / 2
+    center_y = player_pos.y + player_size.y / 2
+    pos = pygame.Vector2(center_x - size.x / 2, center_y - size.y / 2)
+    vel = direction.normalize() * special_cfg["velocity"]
+
+    bullet_entity = crear_cuadrado_prefab(world, size, pos, vel, color)
+    world.add_component(bullet_entity, CTagBullet())
+
+
+def create_text(
+    world: esper.World,
+    font_path: str,
+    text_cfg: dict,
+    ui_role: str | None = None,
+    visible: bool = True,
+    align: str = "left",
+):
+    color_cfg = text_cfg["color"]
+    color = pygame.Color(color_cfg["r"], color_cfg["g"], color_cfg["b"])
+    font = ServiceLocator.fonts_service.get(font_path, text_cfg["size"])
+    text_entity = world.create_entity()
+    world.add_component(
+        text_entity,
+        CTransform(
+            pygame.Vector2(text_cfg["position"]["x"], text_cfg["position"]["y"])
+        ),
+    )
+    world.add_component(
+        text_entity,
+        CSurface.from_text(text_cfg["text"], font, color),
+    )
+    world.add_component(
+        text_entity,
+        CText(
+            text=text_cfg["text"],
+            font_path=font_path,
+            font_size=text_cfg["size"],
+            color=color,
+            visible=visible,
+        ),
+    )
+    if ui_role is not None or align != "left":
+        world.add_component(text_entity, CUiText(ui_role or "", align=align))
+    return text_entity
+
+
 def create_input_player(world: esper.World):
     input_left = world.create_entity()
     world.add_component(input_left, CInputCommand("PLAYER_LEFT", pygame.K_LEFT))
@@ -193,3 +252,34 @@ def create_input_player(world: esper.World):
     world.add_component(input_up_w, CInputCommand("PLAYER_UP", pygame.K_w))
     input_down_s = world.create_entity()
     world.add_component(input_down_s, CInputCommand("PLAYER_DOWN", pygame.K_s))
+    input_pause = world.create_entity()
+    world.add_component(input_pause, CInputCommand("PLAYER_PAUSE", pygame.K_p))
+    input_special = world.create_entity()
+    world.add_component(input_special, CInputCommand("PLAYER_SPECIAL", pygame.K_e))
+    input_restart = world.create_entity()
+    world.add_component(input_restart, CInputCommand("PLAYER_RESTART", pygame.K_r))
+
+
+def _build_heart_surface(size: int = 12, color: tuple = (220, 40, 60)) -> pygame.Surface:
+    surf = pygame.Surface((size, size), pygame.SRCALPHA)
+    radius = max(2, size // 4)
+    cy = radius + 1
+    pygame.draw.circle(surf, color, (radius, cy), radius)
+    pygame.draw.circle(surf, color, (size - radius - 1, cy), radius)
+    pygame.draw.polygon(
+        surf,
+        color,
+        [(0, cy), (size - 1, cy), (size // 2, size - 1)],
+    )
+    return surf
+
+
+def create_heart(world: esper.World, index: int, pos: pygame.Vector2) -> int:
+    heart_surface = _build_heart_surface()
+    heart_entity = world.create_entity()
+    world.add_component(heart_entity, CTransform(pos))
+    world.add_component(heart_entity, CSurface.from_surface(heart_surface))
+    c_s = world.component_for_entity(heart_entity, CSurface)
+    world.add_component(heart_entity, CUiHeart(index, c_s.area))
+    return heart_entity
+
