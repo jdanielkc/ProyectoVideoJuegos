@@ -7,6 +7,7 @@ from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_transform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.components.tags.c_tag_player import CTagPlayer
+from src.engine.service_locator import ServiceLocator
 
 
 def system_hunter_state(world: esper.World):
@@ -48,6 +49,7 @@ def _do_idle(
     _set_animation(c_a, 1)
     dist = hunter_center.distance_to(player_center)
     if dist <= c_h.distance_start_chase:
+        ServiceLocator.sounds_service.play(c_h.sound_chase)
         c_h.state = HunterState.CHASE
 
 

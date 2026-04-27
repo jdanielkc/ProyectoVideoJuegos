@@ -11,12 +11,14 @@ class CHunterState:
         velocity_return: float,
         distance_start_chase: float,
         distance_start_return: float,
+        sound_chase: str,
     ) -> None:
         self.origin = origin.copy()
         self.velocity_chase = velocity_chase
         self.velocity_return = velocity_return
         self.distance_start_chase = distance_start_chase
         self.distance_start_return = distance_start_return
+        self.sound_chase = sound_chase
         self.state = HunterState.IDLE
 
 
