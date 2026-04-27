@@ -57,10 +57,13 @@ class GameEngine:
         self._special_cfg = self._load_json("assets/cfg/special.json")
 
         size = self._window_cfg["size"]
-        self.screen = pygame.display.set_mode(
-            (size["w"], size["h"]),
+        self._scale = max(1, int(self._window_cfg.get("scale", 1)))
+        self._display_surface = pygame.display.set_mode(
+            (size["w"] * self._scale, size["h"] * self._scale),
             self._get_display_flags(),
         )
+        # Superficie lógica donde se dibuja el juego (tamaño nativo)
+        self.screen = pygame.Surface((size["w"], size["h"]))
         pygame.display.set_caption(self._window_cfg["title"])
 
         bg = self._window_cfg["bg_color"]
@@ -151,6 +154,11 @@ class GameEngine:
     def _draw(self):
         self.screen.fill(self._bg_color)
         system_rendering(self.ecs_world, self.screen)
+        if self._scale == 1:
+            self._display_surface.blit(self.screen, (0, 0))
+        else:
+            scaled = pygame.transform.scale(self.screen, self._display_surface.get_size())
+            self._display_surface.blit(scaled, (0, 0))
         pygame.display.flip()
 
     def _clean(self):
@@ -200,7 +208,8 @@ class GameEngine:
         pl_t = self.ecs_world.component_for_entity(self._player_entity, CTransform)
         pl_s = self.ecs_world.component_for_entity(self._player_entity, CSurface)
         player_size = pygame.Vector2(pl_s.area.w, pl_s.area.h)
-        mouse_pos = pygame.mouse.get_pos()
+        mx, my = pygame.mouse.get_pos()
+        mouse_pos = (mx // self._scale, my // self._scale)
         create_bullet_square(
             self.ecs_world, self._bullet_cfg, pl_t.pos, player_size, mouse_pos
         )
